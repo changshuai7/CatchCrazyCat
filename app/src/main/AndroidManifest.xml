@@ -9,7 +9,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name="com.shuai.catchcrazycat.Activity.MainActivity"
+            android:name="com.shuai.catchcrazycat.UI.MainActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -18,7 +18,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.shuai.catchcrazycat.Activity.GameActivity"
+            android:name="com.shuai.catchcrazycat.UI.Main2Activity"
             android:screenOrientation="portrait" />
     </application>
 

@@ -24,12 +24,16 @@ import android.view.View.OnTouchListener;
 
 import com.shuai.catchcrazycat.R;
 
-public class GameView extends SurfaceView implements OnTouchListener {
+/**
+ * 游戏View
+ */
+
+public class Playground extends SurfaceView implements OnTouchListener {
 
     // 行数
-    private static final int ROW = 9;
+    private static final int ROW = 10;
     // 列数
-    private static final int COL = 9;
+    private static final int COL = 10;
     // 障碍的数量
     private static final int BOCKS = COL * ROW / 5;
     // 屏幕宽度
@@ -49,9 +53,9 @@ public class GameView extends SurfaceView implements OnTouchListener {
     // 神经猫动态图的索引
     private int index = 0;
 
-    private Point[][] matrix;
+    private Dot[][] matrix;
 
-    private Point cat;
+    private Dot cat;
 
     private Timer timer;
 
@@ -70,9 +74,9 @@ public class GameView extends SurfaceView implements OnTouchListener {
             R.drawable.cat11, R.drawable.cat12, R.drawable.cat13,
             R.drawable.cat14, R.drawable.cat15, R.drawable.cat16};
 
-    public GameView(Context context) {
+    public Playground(Context context) {
         super(context);
-        matrix = new Point[ROW][COL];
+        matrix = new Dot[ROW][COL];
 
         if (Build.VERSION.SDK_INT < 21) {
             cat_drawable = getResources().getDrawable(images[index]);
@@ -94,21 +98,21 @@ public class GameView extends SurfaceView implements OnTouchListener {
         steps = 0;
         for (int i = 0; i < ROW; i++) {
             for (int j = 0; j < COL; j++) {
-                matrix[i][j] = new Point(j, i);
+                matrix[i][j] = new Dot(j, i);
             }
         }
         for (int i = 0; i < ROW; i++) {
             for (int j = 0; j < COL; j++) {
-                matrix[i][j].setStatus(Point.STATUS.STATUS_OFF);
+                matrix[i][j].setStatus(Dot.STATUS.STATUS_OFF);
             }
         }
-        cat = new Point(COL / 2 - 1, ROW / 2 - 1);
-        getDot(cat.getX(), cat.getY()).setStatus(Point.STATUS.STATUS_IN);
+        cat = new Dot(COL / 2 - 1, ROW / 2 - 1);
+        getDot(cat.getX(), cat.getY()).setStatus(Dot.STATUS.STATUS_IN);
         for (int i = 0; i < BOCKS; ) {
             int x = (int) ((Math.random() * 100) % COL);
             int y = (int) ((Math.random() * 100) % ROW);
-            if (getDot(x, y).getStatus() == Point.STATUS.STATUS_OFF) {
-                getDot(x, y).setStatus(Point.STATUS.STATUS_ON);
+            if (getDot(x, y).getStatus() == Dot.STATUS.STATUS_OFF) {
+                getDot(x, y).setStatus(Dot.STATUS.STATUS_ON);
                 i++;
             }
         }
@@ -126,7 +130,7 @@ public class GameView extends SurfaceView implements OnTouchListener {
                 if (i % 2 != 0) {
                     DISTANCE = WIDTH / 2;
                 }
-                Point dot = getDot(j, i);
+                Dot dot = getDot(j, i);
                 switch (dot.getStatus()) {
                     case STATUS_IN:
                         paint.setColor(0XFFEEEEEE);
@@ -214,12 +218,12 @@ public class GameView extends SurfaceView implements OnTouchListener {
     }
 
     // 获取通道对象
-    private Point getDot(int x, int y) {
+    private Dot getDot(int x, int y) {
         return matrix[y][x];
     }
 
     // 判断神经猫是否处于边界
-    private boolean inEdge(Point dot) {
+    private boolean inEdge(Dot dot) {
         if (dot.getX() * dot.getY() == 0 || dot.getX() + 1 == COL
                 || dot.getY() + 1 == ROW) {
             return true;
@@ -228,23 +232,23 @@ public class GameView extends SurfaceView implements OnTouchListener {
     }
 
     // 移动cat至指定点
-    private void moveTo(Point dot) {
-        dot.setStatus(Point.STATUS.STATUS_IN);
-        getDot(cat.getX(), cat.getY()).setStatus(Point.STATUS.STATUS_OFF);
+    private void moveTo(Dot dot) {
+        dot.setStatus(Dot.STATUS.STATUS_IN);
+        getDot(cat.getX(), cat.getY()).setStatus(Dot.STATUS.STATUS_OFF);
         cat.setXY(dot.getX(), dot.getY());
     }
 
     // 获取one在方向dir上的可移动距离
-    private int getDistance(Point one, int dir) {
+    private int getDistance(Dot one, int dir) {
         int distance = 0;
         if (inEdge(one)) {
             return 1;
         }
-        Point ori = one;
-        Point next;
+        Dot ori = one;
+        Dot next;
         while (true) {
             next = getNeighbour(ori, dir);
-            if (next.getStatus() == Point.STATUS.STATUS_ON) {
+            if (next.getStatus() == Dot.STATUS.STATUS_ON) {
                 return distance * -1;
             }
             if (inEdge(next)) {
@@ -257,7 +261,7 @@ public class GameView extends SurfaceView implements OnTouchListener {
     }
 
     // 获取dot的相邻点，返回其对象
-    private Point getNeighbour(Point dot, int dir) {
+    private Dot getNeighbour(Dot dot, int dir) {
         switch (dir) {
             case 1:
                 return getDot(dot.getX() - 1, dot.getY());
@@ -297,12 +301,12 @@ public class GameView extends SurfaceView implements OnTouchListener {
             failure();
             return;
         }
-        Vector<Point> available = new Vector<>();
-        Vector<Point> direct = new Vector<>();
-        HashMap<Point, Integer> hash = new HashMap<>();
+        Vector<Dot> available = new Vector<>();
+        Vector<Dot> direct = new Vector<>();
+        HashMap<Dot, Integer> hash = new HashMap<>();
         for (int i = 1; i < 7; i++) {
-            Point n = getNeighbour(cat, i);
-            if (n.getStatus() == Point.STATUS.STATUS_OFF) {
+            Dot n = getNeighbour(cat, i);
+            if (n.getStatus() == Dot.STATUS.STATUS_OFF) {
                 available.add(n);
                 hash.put(n, i);
                 if (getDistance(n, i) > 0) {
@@ -316,7 +320,7 @@ public class GameView extends SurfaceView implements OnTouchListener {
         } else if (available.size() == 1) {
             moveTo(available.get(0));
         } else {
-            Point best = null;
+            Dot best = null;
             if (direct.size() != 0) {
                 int min = 20;
                 for (int i = 0; i < direct.size(); i++) {
@@ -410,8 +414,8 @@ public class GameView extends SurfaceView implements OnTouchListener {
                 initGame();
                 canMove = true;
                 return true;
-            } else if (getDot(x, y).getStatus() == Point.STATUS.STATUS_OFF) {
-                getDot(x, y).setStatus(Point.STATUS.STATUS_ON);
+            } else if (getDot(x, y).getStatus() == Dot.STATUS.STATUS_OFF) {
+                getDot(x, y).setStatus(Dot.STATUS.STATUS_ON);
                 move();
                 steps++;
             }

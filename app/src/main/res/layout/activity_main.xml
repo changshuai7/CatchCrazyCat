@@ -7,10 +7,10 @@
     android:background="@drawable/login">
 
     <ImageView
+        android:id="@+id/btn_start"
         android:layout_alignParentBottom="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="onClick"
         android:src="@drawable/start_game" />
 
 </RelativeLayout>

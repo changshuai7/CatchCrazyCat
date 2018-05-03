@@ -1,14 +1,18 @@
 package com.shuai.catchcrazycat.View;
 
-public class Point {
 
-    private int x, y;
+/**
+ * 点的抽象
+ */
 
-    public  enum STATUS {STATUS_OFF, STATUS_IN, STATUS_ON}
+public class Dot {
 
-    private STATUS status;
+    private int x, y;//坐标位置
+    private STATUS status;//定义三种状态,建议用枚举
 
-    public Point(int x, int y) {
+    public enum STATUS {STATUS_OFF, STATUS_IN, STATUS_ON}//定义三种状态,建议用枚举
+
+    public Dot(int x, int y) {
         this.x = x;
         this.y = y;
     }
