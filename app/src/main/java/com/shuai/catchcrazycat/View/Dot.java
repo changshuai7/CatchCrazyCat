@@ -12,6 +12,9 @@ public class Dot {
 
     public enum STATUS {STATUS_OFF, STATUS_IN, STATUS_ON}//定义三种状态,建议用枚举
 
+    // off:路障关；on：路障开；in：神经猫所在地
+
+
     public Dot(int x, int y) {
         this.x = x;
         this.y = y;
