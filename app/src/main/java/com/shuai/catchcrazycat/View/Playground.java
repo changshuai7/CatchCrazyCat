@@ -41,8 +41,13 @@ public class Playground extends SurfaceView implements OnTouchListener {
     private int SCREEN_WIDTH;
     // 每个通道的宽度
     private int WIDTH;
+
+
     // 奇数行和偶数行通道间的位置偏差量
+    //i % 2 != 0 需要有distance,   i % 2  = 0 不需要有distance
     private int DISTANCE;
+
+
     // 屏幕顶端和通道最顶端间的距离
     private int OFFSET;
     // 整个通道与屏幕两端间的距离
@@ -104,7 +109,7 @@ public class Playground extends SurfaceView implements OnTouchListener {
          *
          * SurfaceView中调用getHolder方法，可以获得当前SurfaceView中的surface对应的SurfaceHolder，SurfaceHolder中重要的方法有
          *
-         * abstract  void addCallback（SurfaceHolder.Callback callback );为SurfaceHolder添加一个SurfaceHolder.Callback回调接口。
+         * abstract void addCallback（SurfaceHolder.Callback callback );为SurfaceHolder添加一个SurfaceHolder.Callback回调接口。
          *
          */
         getHolder().addCallback(callback);
@@ -135,23 +140,38 @@ public class Playground extends SurfaceView implements OnTouchListener {
     private void initGame() {
         //初始化步骤为0
         steps = 0;
+
         //for循环，将所有的点添加到二维数组中。
+        //(0,0),(1,0),(2,0),(3,0),(4,0),(5,0),(6,0),(7,0),(8,0)
+        //(0,1),(1,1),(2,1),(3,1),(4,1),(5,1),(6,1),(7,1),(8,1)
+        //(0,2),(1,1),(2,2),(3,2),(4,2),(5,2),(6,2),(7,2),(8,2)
+        //(0,3),(1,3),(2,3),(3,3),(4,3),(5,3),(6,3),(7,3),(8,3)
+        //(0,4),(1,4),(2,4),(3,4),(4,4),(5,4),(6,4),(7,4),(8,4)
+        //(0,5),(1,5),(2,5),(3,5),(4,5),(5,5),(6,5),(7,5),(8,5)
+        //(0,6),(1,6),(2,6),(3,6),(4,6),(5,6),(6,6),(7,6),(8,6)
+        //(0,7),(1,7),(2,7),(3,7),(4,7),(5,7),(6,7),(7,7),(8,7)
+        //(0,8),(1,8),(2,8),(3,8),(4,8),(5,8),(6,8),(7,8),(8,8)
+
         for (int i = 0; i < ROW; i++) {
             for (int j = 0; j < COL; j++) {
                 matrix[i][j] = new Dot(j, i);
             }
         }
-        //将所有的点设置状态：空心
+
+        //将所有的点设置状态：路障关
         for (int i = 0; i < ROW; i++) {
             for (int j = 0; j < COL; j++) {
                 matrix[i][j].setStatus(Dot.STATUS.STATUS_OFF);
             }
         }
+
         //设置猫的位置。中间位置。
         cat = new Dot(COL / 2 - 1, ROW / 2 - 1);
-        //设置猫的状态：猫踩到。
+
+        //设置猫的状态：神经猫所在位置
         getDot(cat.getX(), cat.getY()).setStatus(Dot.STATUS.STATUS_IN);
-        //随机设置BOLCKS个实心位置。
+
+        //随机设置路障的位置。
         for (int i = 0; i < BOCKS; ) {
             //Math类的random()方法可以生成大于等于0.0、小于1.0的double型随机数
             int x = (int) ((Math.random() * 100) % COL);//%求余（求模）运算
@@ -178,16 +198,18 @@ public class Playground extends SurfaceView implements OnTouchListener {
         Paint paint = new Paint();
         //设置画笔flags
         paint.setFlags(Paint.ANTI_ALIAS_FLAG);
+
+        //遍历所有的点
         for (int i = 0; i < ROW; i++) {
             for (int j = 0; j < COL; j++) {
 
 
                 DISTANCE = 0;
-                if (i % 2 != 0) {
-                    DISTANCE = WIDTH / 2;
+                if (i % 2 != 0) {//如果是偶数行
+                    DISTANCE = WIDTH / 2; //如果是偶数行，那么存在位置偏差
                 }
 
-                //获取到点
+                //根据坐标，获取到点
                 Dot dot = getDot(j, i);
 
                 //得到点的状态
@@ -195,10 +217,10 @@ public class Playground extends SurfaceView implements OnTouchListener {
                     case STATUS_IN://神经猫所在的点
                         paint.setColor(0XFFEEEEEE);//设置颜色白色
                         break;
-                    case STATUS_ON://实心
+                    case STATUS_ON://路障开
                         paint.setColor(0XFFFFAA00);//设置实心颜色
                         break;
-                    case STATUS_OFF://空心
+                    case STATUS_OFF://路障关
                         paint.setColor(0X74000000);//设置空心颜色
                         break;
                     default:
@@ -214,28 +236,35 @@ public class Playground extends SurfaceView implements OnTouchListener {
                  */
 
                 canvas.drawOval(new RectF(
-                        dot.getX() * WIDTH + DISTANCE+ length,
-                        dot.getY() * WIDTH + OFFSET,
-                        (dot.getX() + 1)* WIDTH + DISTANCE + length,
-                        (dot.getY() + 1) * WIDTH+ OFFSET),
-                        paint
+                        dot.getX() * WIDTH + DISTANCE+ length,//路障左侧距离和屏幕左边距离：路障个数*路障宽度+左侧差距离+通道和两边的距离
+                        dot.getY() * WIDTH + OFFSET,//路障上侧和屏幕上侧距离：路障个数*路障宽度+和屏幕顶端距离
+                        (dot.getX() + 1)* WIDTH + DISTANCE + length,//路障右侧和屏幕左侧距离：（路障个数+1）*路障宽度+左侧差距离+通道和两边的距离
+                        (dot.getY() + 1) * WIDTH+ OFFSET),//路障下侧和屏幕下侧距离：（路障个数+1）*路障宽度+和屏幕顶端距离
+                        paint //画笔
                 );
 
 
             }
         }
+
+        //定义两个int参数：神经猫（左侧的点）和左侧屏幕的距离、和上侧屏幕的距离
         int left;
         int top;
-        if (cat.getY() % 2 == 0) {//如果是偶数行
+        if (cat.getY() % 2 == 0) {//如果是奇数行，不存在位置偏差
             left = cat.getX() * WIDTH;
             top = cat.getY() * WIDTH;
-        } else {//如果是奇数行
+        } else {//如果是偶数航，是存在偏差的
             left = (WIDTH / 2) + cat.getX() * WIDTH;
             top = cat.getY() * WIDTH;
         }
-        // 此处神经猫图片的位置是根据效果图来调整的
-        cat_drawable.setBounds(left - WIDTH / 6 + length, top - WIDTH / 2
-                + OFFSET, left + WIDTH + length, top + WIDTH + OFFSET);
+        // 此处神经猫图片的位置是根据效果图来调整的。这个参数没有固定的实际意义。
+        cat_drawable.setBounds(
+                left - WIDTH / 6 + length,
+                top - WIDTH / 2+ OFFSET,
+                left + WIDTH + length,
+                top + WIDTH + OFFSET);
+
+
         cat_drawable.draw(canvas);
         background.setBounds(0, 0, SCREEN_WIDTH, OFFSET);
         background.draw(canvas);
@@ -249,13 +278,13 @@ public class Playground extends SurfaceView implements OnTouchListener {
      * 3： public void surfaceDestroyed(SurfaceHolder holder){}//销毁时激发，一般在这里将画面的线程停止、释放。
      */
     Callback callback = new Callback() {
-        //Surface创建时激发
+        //Surface创建时激发，一般在这里调用画面的线程。
         public void surfaceCreated(SurfaceHolder holder) {
-            redraw();//绘图
-            startTimer();//启动定时器
+            redraw();//绘图：绘制屏幕上所有图形。
+            startTimer();//启动定时器：主要是启动神经猫的动画。
         }
 
-        //Surface发生改变时调用。
+        //Surface的大小发生改变时调用。//todo
         public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
             WIDTH = width / (COL + 1);
             OFFSET = height - WIDTH * ROW - 2 * WIDTH;
@@ -263,13 +292,13 @@ public class Playground extends SurfaceView implements OnTouchListener {
             SCREEN_WIDTH = width;
         }
 
-        //Surface销毁时调用。
+        //销毁时激发，一般在这里将画面的线程停止、释放。
         public void surfaceDestroyed(SurfaceHolder holder) {
             stopTimer();
         }
     };
 
-    // 开启定时任务
+    // 开启定时任务，切换图片，其实这种切换效率是很低的。
     private void startTimer() {
         timer = new Timer();
         timerttask = new TimerTask() {
@@ -277,6 +306,9 @@ public class Playground extends SurfaceView implements OnTouchListener {
                 gifImage();
             }
         };
+        /**
+         * delay50表示一张图片的延迟时间：period65表示持续时间。
+         */
         timer.schedule(timerttask, 50, 65);
     }
 
@@ -307,43 +339,50 @@ public class Playground extends SurfaceView implements OnTouchListener {
 
     // 判断神经猫是否处于边界
     private boolean inEdge(Dot dot) {
-        if (dot.getX() * dot.getY() == 0 || dot.getX() + 1 == COL
-                || dot.getY() + 1 == ROW) {
-            return true;
+        if (dot.getX() * dot.getY() == 0 //上左边缘
+                || dot.getX() + 1 == COL //右边缘
+                || dot.getY() + 1 == ROW //下边缘
+                ) {
+            return true;//是
         }
-        return false;
+        return false;//否
     }
 
-    // 移动cat至指定点
+    // 移动cat至指定Dot点
     private void moveTo(Dot dot) {
-        dot.setStatus(Dot.STATUS.STATUS_IN);
-        getDot(cat.getX(), cat.getY()).setStatus(Dot.STATUS.STATUS_OFF);
-        cat.setXY(dot.getX(), dot.getY());
+        dot.setStatus(Dot.STATUS.STATUS_IN);//设置神经猫的新状态为：神经猫的位置
+        getDot(cat.getX(), cat.getY()).setStatus(Dot.STATUS.STATUS_OFF);//将原神经猫的位置设置为非路障
+        cat.setXY(dot.getX(), dot.getY());//设置神经猫的新状态。
     }
 
-    // 获取one在方向dir上的可移动距离
-    private int getDistance(Dot one, int dir) {
-        int distance = 0;
-        if (inEdge(one)) {
+    // 获取one这个点在方向dir上的可移动距离（dir总共有6个方向）
+    private int getDistance(Dot one, int dir) {//todo
+        int distance = 0;//默认可移动距离为0。初始值。
+        if (inEdge(one)) {//如果是在边界。则返回1，即可移动
             return 1;
         }
-        Dot ori = one;
-        Dot next;
+        Dot ori = one;//初始点
+        Dot next;//下一步移动点
+
+        //循环移动点，计算可以移动多少距离
         while (true) {
-            next = getNeighbour(ori, dir);
-            if (next.getStatus() == Dot.STATUS.STATUS_ON) {
+            next = getNeighbour(ori, dir);//获取dir方向相邻的点
+            //如果这个相邻的点是路障
+            if (next.getStatus() == Dot.STATUS.STATUS_ON) {//路障开
                 return distance * -1;
             }
+            //如果这个相邻的点是边界
             if (inEdge(next)) {
                 distance++;
                 return distance;
             }
+            //其他
             distance++;
             ori = next;
         }
     }
 
-    // 获取dot的相邻点，返回其对象
+    // 获取dot的相邻点，返回其对象。总共6个点
     private Dot getNeighbour(Dot dot, int dir) {
         switch (dir) {
             case 1:
@@ -378,21 +417,23 @@ public class Playground extends SurfaceView implements OnTouchListener {
         return null;
     }
 
-    // cat的移动算法
+    // cat的移动算法（六边形）只移动一步。移动到最优路径。
     private void move() {
+        //如果cat在边界，则失败。return
         if (inEdge(cat)) {
             failure();
             return;
         }
-        Vector<Dot> available = new Vector<>();
-        Vector<Dot> direct = new Vector<>();
-        HashMap<Dot, Integer> hash = new HashMap<>();
-        for (int i = 1; i < 7; i++) {
-            Dot n = getNeighbour(cat, i);
-            if (n.getStatus() == Dot.STATUS.STATUS_OFF) {
-                available.add(n);
-                hash.put(n, i);
-                if (getDistance(n, i) > 0) {
+
+        Vector<Dot> available = new Vector<>();//6个点中，非路障的点 的集合
+        Vector<Dot> direct = new Vector<>();//6个点中，在某个方向可移动距离大于0 的集合。
+        HashMap<Dot, Integer> hash = new HashMap<>();//6个点中，非路障的(点，方向)。集合存放到HashMap中。
+        for (int i = 1; i < 7; i++) {//cat在1-6这6个方向上 遍历
+            Dot n = getNeighbour(cat, i);//获取某个方向上相邻的点。
+            if (n.getStatus() == Dot.STATUS.STATUS_OFF) {//如果路障关
+                available.add(n);//将此点加入available集合中。
+                hash.put(n, i);//将(点，方向)。集合存放到HashMap中。
+                if (getDistance(n, i) > 0) {//如果这个点在某个方向上可移动距离大于0，则将点存放于direct中。
                     direct.add(n);
                 }
             }
@@ -401,46 +442,44 @@ public class Playground extends SurfaceView implements OnTouchListener {
         //可用通道为0，则成功
         if (available.size() == 0) {
             win();
-            canMove = false;
+            canMove = false;//不可移动
         }
         //可用通道为1，则移动到这个通道
         else if (available.size() == 1) {
-            moveTo(available.get(0));
+            moveTo(available.get(0));//就一个通道，集合中就一个元素，必然是get(0)
         }
 
         //其他情况
         else {
-            Dot best = null;
-            if (direct.size() != 0) {
+            Dot best = null;//最优路径
+            if (direct.size() != 0) {//6个点中，某个点的可移动距离不等于0的时候
                 int min = 20;
-                for (int i = 0; i < direct.size(); i++) {
-                    if (inEdge(direct.get(i))) {
-                        best = direct.get(i);
+                for (int i = 0; i < direct.size(); i++) {//遍历direct的所有的这些点。
+                    if (inEdge(direct.get(i))) {//如果点是边界
+                        best = direct.get(i);//那么这个就是最优路径
                         break;
                     } else {
-                        int t = getDistance(direct.get(i),
-                                hash.get(direct.get(i)));
+                        int t = getDistance(direct.get(i),hash.get(direct.get(i)));//获取这个点在这个方向上的距离
                         if (t < min) {
                             min = t;
                             best = direct.get(i);
                         }
                     }
                 }
-            } else {
-                int max = 1;
-                for (int i = 0; i < available.size(); i++) {
-                    int k = getDistance(available.get(i),
-                            hash.get(available.get(i)));
+            } else {//如果6个点中，direct.size() = 0 6个点中，在某个方向可移动距离没有大于0的。
+                int max = 1;//则仅可以移动一步。
+                for (int i = 0; i < available.size(); i++) {//遍历可移动的点。
+                    int k = getDistance(available.get(i), hash.get(available.get(i)));//获取可移动的距离
                     if (k < max) {
                         max = k;
                         best = available.get(i);
                     }
                 }
             }
-            moveTo(best);
+            moveTo(best);//移动到最优路径。
         }
         if (inEdge(cat)) {
-            failure();
+            failure();//到达边界，则失败。
         }
     }
 
